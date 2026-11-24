@@ -18,6 +18,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script>
+  /* VELORA admin gate: unlock Edit/admin UI via ?admin (sticks per browser), ?admin=off locks again. */
+  window.__gate = { search: location.search, href: location.href, rs: document.readyState };
+  try {
+    var gq = new URLSearchParams(location.search);
+    window.__gate.has = gq.has("admin");
+    if (gq.has("admin")) {
+      if (gq.get("admin") === "off") localStorage.removeItem("velora_admin");
+      else localStorage.setItem("velora_admin", "1");
+      history.replaceState(null, "", location.pathname + (location.hash || "#/"));
+      window.__gate.done = true;
+    }
+  } catch (ge) { window.__gate.err = String(ge); }
+  </script>
 </head>
 <body>
   <div id="splash" aria-hidden="true">
