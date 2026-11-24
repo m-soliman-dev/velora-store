@@ -20,17 +20,14 @@
   <link rel="stylesheet" href="style.css" />
   <script>
   /* VELORA admin gate: unlock Edit/admin UI via ?admin (sticks per browser), ?admin=off locks again. */
-  window.__gate = { search: location.search, href: location.href, rs: document.readyState };
   try {
     var gq = new URLSearchParams(location.search);
-    window.__gate.has = gq.has("admin");
     if (gq.has("admin")) {
       if (gq.get("admin") === "off") localStorage.removeItem("velora_admin");
       else localStorage.setItem("velora_admin", "1");
       history.replaceState(null, "", location.pathname + (location.hash || "#/"));
-      window.__gate.done = true;
     }
-  } catch (ge) { window.__gate.err = String(ge); }
+  } catch (ge) {}
   </script>
 </head>
 <body>
