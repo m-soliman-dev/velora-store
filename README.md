@@ -1,0 +1,1 @@
+# VELORA demo store
