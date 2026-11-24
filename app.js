@@ -531,7 +531,7 @@ function shellHtml() {
     '<div class="mobile-nav" id="mobileNav"><div class="scrim" data-close-mnav></div><div class="panel">' +
       '<div class="mhead"><span class="brand-text">VELORA<small>FASHION STORE</small></span><button class="icon-btn" data-close-mnav>' + icon("close") + "</button></div>" +
       navLinksHtml().replace(/<a /g, '<a class="mlink" ') +
-      '<a class="mlink" href="#/admin">' + t("admin") + "</a>" +
+      (isAdmin() ? '<a class="mlink" href="#/admin">' + t("admin") + "</a>" : "") +
     "</div></div>" +
     '<main id="view"></main>' +
     '<footer class="site-footer"><div class="container">' +
@@ -558,7 +558,7 @@ function shellHtml() {
     "</div></footer>" +
     '<a class="wa-float" href="https://wa.me/' + VELORA_STORE.whatsapp + "?text=" + encodeURIComponent("Hello VELORA!") + '" target="_blank" rel="noopener" aria-label="WhatsApp">' + icon("wa") + "</a>" +
     '<button class="back-to-top" id="backTop" aria-label="top">' + icon("up") + "</button>" +
-    '<button class="edit-fab" id="editFab">' + icon("pencil") + "<span>" + t("edit") + "</span></button>"
+    (isAdmin() ? '<button class="edit-fab" id="editFab">' + icon("pencil") + "<span>" + t("edit") + "</span></button>" : "")
   );
 }
 
@@ -574,7 +574,8 @@ function bindShell() {
   const bt = document.getElementById("backTop");
   window.addEventListener("scroll", () => bt.classList.toggle("show", window.scrollY > 600), { passive: true });
   bt.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-  document.getElementById("editFab").addEventListener("click", toggleEditMode);
+  const efab = document.getElementById("editFab");
+  if (efab) efab.addEventListener("click", toggleEditMode);
   updateBadges();
   const h = location.hash || "#/";
   document.querySelectorAll("[data-nav]").forEach(a => a.classList.toggle("active", a.getAttribute("data-nav") === h || (h.startsWith(a.getAttribute("data-nav")) && a.getAttribute("data-nav") !== "#/")));
@@ -1372,6 +1373,7 @@ function deleteProduct(sku) {
 /* ---------- admin dashboard ---------- */
 let adminTab = "dash";
 function viewAdmin() {
+  if (!isAdmin()) { location.hash = "#/"; return; }
   const view = document.getElementById("view");
   const revenue = state.orders.reduce((s, o) => s + o.total, 0);
   const stockCount = state.products.reduce((s, p) => s + (p.stock || 0), 0);
@@ -1435,6 +1437,26 @@ function viewAdmin() {
   });
 }
 addRoute(/^\/admin$/, viewAdmin);
+
+
+/* ---------- admin access gate ----------
+   The Edit button, the admin dashboard link and the #/admin route only unlock
+   through the special link (?admin). The unlock sticks to this browser via
+   localStorage, so the plain preview link always opens in view-only mode.
+   Use ?admin=off to lock again on this device. */
+function isAdmin() {
+  try { return localStorage.getItem("velora_admin") === "1"; } catch (e) { return false; }
+}
+(function () {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.has("admin")) {
+      if (q.get("admin") === "off") localStorage.removeItem("velora_admin");
+      else localStorage.setItem("velora_admin", "1");
+      history.replaceState(null, "", location.pathname + (location.hash || "#/"));
+    }
+  } catch (e) {}
+});
 
 /* ---------- boot ---------- */
 renderApp();
