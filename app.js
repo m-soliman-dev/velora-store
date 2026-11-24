@@ -1448,14 +1448,17 @@ function isAdmin() {
   try { return localStorage.getItem("velora_admin") === "1"; } catch (e) { return false; }
 }
 (function () {
+  window.__gate = { search: location.search, href: location.href, readyState: document.readyState };
   try {
     const q = new URLSearchParams(location.search);
+    window.__gate.has = q.has("admin");
     if (q.has("admin")) {
       if (q.get("admin") === "off") localStorage.removeItem("velora_admin");
       else localStorage.setItem("velora_admin", "1");
       history.replaceState(null, "", location.pathname + (location.hash || "#/"));
+      window.__gate.done = true;
     }
-  } catch (e) {}
+  } catch (e) { window.__gate.err = String(e); }
 });
 
 /* ---------- boot ---------- */
